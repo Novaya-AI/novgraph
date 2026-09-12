@@ -1,15 +1,18 @@
 # novgraph
 
+**A live knowledge graph of your codebase, queried by coding agents.**
+
 [![PyPI](https://img.shields.io/pypi/v/novaya?label=pypi%20%C2%B7%20novaya)](https://pypi.org/project/novaya/)
 [![Python](https://img.shields.io/pypi/pyversions/novaya)](https://pypi.org/project/novaya/)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![CI](https://github.com/Novaya-AI/novgraph/actions/workflows/ci.yml/badge.svg)](https://github.com/Novaya-AI/novgraph/actions/workflows/ci.yml)
 
-Command-line client for **Novgraph**, a hosted knowledge graph of a git
-repository. Coding agents query it over MCP or the shell for four things a file
-read cannot give them: the recorded intent behind each commit, files that
-change together without importing each other, ranked blast radius, and computed
-architecture.
+Command-line client for **Novgraph**, a hosted **knowledge graph** of a git
+repository. The graph holds your files and symbols as nodes and their real
+relationships as typed edges, and coding agents query it over MCP or the shell
+for four things a file read cannot give them: the recorded intent behind each
+commit, files that change together without importing each other, ranked blast
+radius, and computed architecture.
 
 **Token savings: 78% to 99.74% per answer**, measured against the cost of
 reading the files each answer cites — not modelled, not estimated from a
@@ -21,7 +24,7 @@ engine**. Indexing, storage and retrieval run on Novaya's servers.
 
 ```sh
 uv tool install novaya      # the PyPI package is `novaya`
-novgraph install <KEY>      #  key: https://app.trynovaya.com ( generate key at https://app.trynovaya.com/ )
+novgraph install <KEY>      # generate a key at https://app.trynovaya.com
 ```
 
 `install` detects every supported agent on the machine, registers the MCP
@@ -44,9 +47,9 @@ not recoverable that way at all:
 | Files that change together | commit co-occurrence | there is no import, call or reference to follow |
 | Computed architecture | whole-graph analysis | hubs, layering and cycles are properties of the graph, not of any file |
 
-Novgraph indexes those per repository and answers from the index. A query
-returns a few hundred tokens where the equivalent file reads cost tens of
-thousands, and every answer reports the difference measured against the files
+Novgraph holds all three in a knowledge graph per repository and answers from
+the graph. A query returns a few hundred tokens where the equivalent file reads
+cost tens of thousands, and every answer reports the difference measured against the files
 it cites:
 
 ```
@@ -60,6 +63,23 @@ ceiling is a structural answer about a large dependency set — ~500 tokens
 against the 191k of cited files above is 99.74%. The ratio is a property of how
 much the answer's cited files would have cost to read, so it is reported per
 answer rather than claimed as a headline.
+
+## What's in the knowledge graph
+
+One graph per repository, built from the working tree and the full git history.
+
+| | |
+| --- | --- |
+| **Nodes** | files, and symbols within them: `function`, `class`, `method`, `constant` |
+| **Structural edges** | `imports`, `calls`, `inherits`, `contains` — parsed from source |
+| **History edges** | `co_change` (files committed together, weighted by commit count), `changed` (which update touched which file) |
+| **Inferred edges** | runtime relationships no parser can see, added by an LLM pass over the graph |
+| **Records** | one why-entry per commit: subject, intent, reasoning, files touched, serial number |
+| **Computed views** | load-bearing hubs, de-facto subsystems, layering, dependency cycles — derived from the whole graph, not declared anywhere |
+
+Language coverage is Python and JS/TS via tree-sitter, with a generic
+tree-sitter path for Go, Rust, Java and C. Nothing about the graph is
+hand-maintained: it is rebuilt from the repository on every push.
 
 ## Features
 
@@ -89,7 +109,7 @@ answer rather than claimed as a headline.
   they describe. Anything newer than the index is reported as such, so the agent
   reads the working tree instead.
 
-### Compared with the alternatives
+### Knowledge graph vs. the alternatives
 
 | | grep + file reads | static code graph | novgraph |
 | --- | --- | --- | --- |
