@@ -100,7 +100,7 @@ answer rather than claimed as a headline.
 | Constants resolved exactly | yes | partial | yes |
 | History survives a rename | n/a | no | yes |
 | Refresh | none needed | re-run it | webhook per push |
-| Token cost reported | no | no | per answer, 78%–99.74% measured |
+| Token cost reported | no | no | per answer, 78%–99.74% token savings measured |
 | Runs on your machine | yes | yes | no |
 
 ## Commands
