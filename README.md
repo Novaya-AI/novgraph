@@ -21,7 +21,7 @@ engine**. Indexing, storage and retrieval run on Novaya's servers.
 
 ```sh
 uv tool install novaya      # the PyPI package is `novaya`
-novgraph install <KEY>      # free key: https://app.trynovaya.com
+novgraph install <KEY>      #  key: https://app.trynovaya.com ( generate key at https://app.trynovaya.com/ )
 ```
 
 `install` detects every supported agent on the machine, registers the MCP
