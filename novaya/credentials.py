@@ -76,10 +76,32 @@ _PS_LOAD = (
 def _powershell(script, path, stdin_text=""):
     # Path via env, not argv: `powershell -Command` appends trailing args to
     # the command text instead of binding $args, so $target read empty.
+    # A Python process launched from PowerShell 7 inherits PSModulePath entries
+    # for both editions. Passing those to Windows PowerShell 5.1 can make its
+    # built-in Security module fail with duplicate TypeData members, leaving a
+    # valid DPAPI file unreadable. Preserve the environment variable's actual
+    # casing (Windows environment mappings are case-insensitive) and give the
+    # helper only Windows PowerShell-compatible module roots.
+    module_key = next(
+        (name for name in os.environ if name.casefold() == "psmodulepath"),
+        "PSModulePath",
+    )
+    native_modules = [
+        item for item in os.environ.get(module_key, "").split(";")
+        if "windowspowershell" in item.casefold()
+    ]
+    builtin_modules = str(
+        Path(os.environ.get("SystemRoot") or r"C:\Windows")
+        / "System32" / "WindowsPowerShell" / "v1.0" / "Modules"
+    )
+    if builtin_modules.casefold() not in {
+            item.casefold() for item in native_modules}:
+        native_modules.append(builtin_modules)
     return _run(
         ["powershell.exe", "-NoProfile", "-NonInteractive", "-Command", script],
         stdin_text=stdin_text,
-        env={"NOVGRAPH_KEY_PATH": str(path)},
+        env={"NOVGRAPH_KEY_PATH": str(path),
+             module_key: ";".join(native_modules)},
     )
 
 

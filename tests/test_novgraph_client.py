@@ -311,6 +311,41 @@ def test_the_loader_hint_never_contains_the_key(_file_backend):
     assert "super-secret-value" not in credentials.source()
 
 
+def test_windows_dpapi_helper_excludes_powershell_7_modules(
+        monkeypatch, tmp_path):
+    """PowerShell 7's modules break Security-module loading in powershell.exe.
+
+    Python preserves the parent's mixed PSModulePath while a PowerShell parent
+    normally repairs it when launching Windows PowerShell. The credential
+    helper is launched by Python, so it has to make that edition boundary
+    explicit itself.
+    """
+    for name in tuple(credentials.os.environ):
+        if name.casefold() == "psmodulepath":
+            monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv(
+        "PSMODULEPATH",
+        r"C:\Program Files\PowerShell\Modules;"
+        r"C:\Windows\System32\WindowsPowerShell\v1.0\Modules",
+    )
+    captured = {}
+
+    def fake_run(argv, stdin_text="", timeout=20.0, env=None):
+        captured.update(env or {})
+        return None
+
+    monkeypatch.setattr(credentials, "_run", fake_run)
+    credentials._powershell("irrelevant", tmp_path / "key.dpapi")
+
+    module_key = next(
+        name for name in captured if name.casefold() == "psmodulepath")
+    paths = captured[module_key].split(";")
+    assert paths
+    assert all("windowspowershell" in path.casefold() for path in paths)
+    assert not any(r"\PowerShell\Modules" in path and
+                   r"\WindowsPowerShell\Modules" not in path for path in paths)
+
+
 # ── which repository ─────────────────────────────────────────────────────────
 
 def test_the_codebase_is_matched_on_the_origin(tmp_path):
@@ -858,3 +893,170 @@ def test_doctor_does_not_read_a_missing_summary_as_content(monkeypatch, tmp_path
     checks, _ = doctor.run(root, deep=True)
     row = next(c for c in checks if c.name == "graph content")
     assert row.status == doctor.FAIL
+
+
+# ── 0.1.7 ────────────────────────────────────────────────────────────────────
+
+def _checkout(tmp_path, folder, url):
+    root = tmp_path / folder
+    (root / ".git").mkdir(parents=True)
+    (root / ".git" / "config").write_text(
+        '[remote "origin"]\n\turl = ' + url + "\n", encoding="utf-8")
+    return root
+
+
+def test_a_checkout_binds_to_the_graph_of_its_own_remote(tmp_path):
+    """`acme/api` and `other/api` are indexed as `api` and `other-api`. Matching
+    on the name bound a checkout of `other/api` to acme's graph."""
+    names = ["api", "other-api"]
+    origins = {"api": "https://github.com/acme/api",
+               "other-api": "https://github.com/other/api"}
+    root = _checkout(tmp_path, "api", "git@github.com:Other/api.git")
+    assert workspace.match_codebase(names, root, origins) == "other-api"
+
+    # A remote nothing was indexed from never borrows a same-named graph.
+    stranger = _checkout(tmp_path, "s/api", "https://github.com/third/api")
+    assert workspace.match_codebase(names, stranger, origins) == ""
+
+    # A graph with no recorded remote still matches by name, as before.
+    assert workspace.match_codebase(["api"], stranger, {"api": ""}) == "api"
+
+    # One remote indexed under two names is for the user to pick.
+    twice = {"a": "https://github.com/other/api", "b": "https://github.com/other/api.git"}
+    assert workspace.match_codebase(["a", "b"], root, twice) == ""
+
+    # An older server with no structured listing keeps the old matching.
+    assert workspace.match_codebase(names, root) == "api"
+
+
+def _doctor_stubs(monkeypatch, listing, served=None):
+    monkeypatch.setattr(doctor.credentials, "load", lambda: "k")
+    monkeypatch.setattr(doctor.credentials, "load_stored", lambda: "")
+    monkeypatch.setattr(doctor.catalog, "refresh",
+                        lambda key: (catalog.save(served or CATALOG), served or CATALOG)[1])
+    monkeypatch.setattr(doctor.adapters, "detected", lambda: [])
+    monkeypatch.setattr(doctor, "_freshness", lambda key, cb: doctor.Check("f", doctor.OK))
+    monkeypatch.setattr(doctor.transport, "call", lambda key, tool, args:
+                        listing if tool == "novgraph_codebases" else {"text": "x" * 200})
+
+
+def test_doctor_fails_a_binding_to_another_repositorys_graph(
+        _file_backend, monkeypatch, tmp_path):
+    """0.1.6 bound by name, so such bindings exist on machines already. Every
+    answer describes the wrong repository and no other check notices."""
+    root = _checkout(tmp_path, "api", "https://github.com/other/api.git")
+    workspace.remember(root, "api")
+    _doctor_stubs(monkeypatch, {"codebases": [
+        {"codebase": "api", "origin_url": "https://github.com/acme/api"},
+        {"codebase": "other-api", "origin_url": "https://github.com/other/api"}]})
+    row = next(c for c in doctor.run(root, deep=False)[0] if c.name == "codebase")
+    assert row.status == doctor.FAIL and "acme/api" in row.detail
+    assert "novgraph install" in row.detail
+
+    workspace.remember(root, "other-api")
+    row = next(c for c in doctor.run(root, deep=False)[0] if c.name == "codebase")
+    assert row.status == doctor.OK
+
+
+def test_doctor_reads_the_generated_files_not_just_their_names(
+        _file_backend, monkeypatch, tmp_path):
+    """skills.md kept a retired tool description while doctor passed: it only
+    checked that the file existed."""
+    root = _checkout(tmp_path, "repo", "https://github.com/o/repo")
+    workspace.remember(root, "repo")
+    docs.write_all(root, CATALOG, "repo", "https://github.com/o/repo")
+    _doctor_stubs(monkeypatch, {"codebases": [
+        {"codebase": "repo", "origin_url": "https://github.com/o/repo"}]})
+    rows = {c.name: c for c in doctor.run(root, deep=False)[0]}
+    assert rows[".novgraph/skills.md"].status == doctor.OK
+
+    (root / ".novgraph" / "skills.md").write_text("an older surface\n", encoding="utf-8")
+    rows = {c.name: c for c in doctor.run(root, deep=False)[0]}
+    assert rows[".novgraph/skills.md"].status == doctor.WARN
+
+
+def test_any_refresh_that_moves_the_catalog_rewrites_bound_repositories(
+        _file_backend, monkeypatch, tmp_path):
+    """MCP session start and doctor refreshed the cache without resyncing; the
+    next call then saw equal versions, so the files never caught up."""
+    from novaya import sync
+    root = _checkout(tmp_path, "repo", "https://github.com/o/repo")
+    workspace.remember(root, "repo")
+    old = {**CATALOG, "service": {"catalog_version": "old"}}
+    catalog.save(old)
+    docs.write_all(root, old, "repo")
+
+    new = {**CATALOG, "service": {"catalog_version": "new"},
+           "tools": [{"type": "function", "function": {
+               "name": "novgraph_why", "description": "Reworded today.",
+               "parameters": {"type": "object", "properties": {}}}}]}
+    monkeypatch.setattr(transport, "catalog", lambda key: new)
+    sync.refresh("k")
+    assert "Reworded today." in (root / ".novgraph" / "skills.md").read_text(encoding="utf-8")
+
+    # Unmoved, nothing is rewritten.
+    (root / ".novgraph" / "skills.md").write_text("left alone\n", encoding="utf-8")
+    sync.refresh("k")
+    assert (root / ".novgraph" / "skills.md").read_text(encoding="utf-8") == "left alone\n"
+
+
+def test_a_call_version_the_listing_never_reports_does_not_resync(
+        _file_backend, monkeypatch):
+    """A server whose call envelope disagrees with its listing made every call
+    refetch and resync. Only a refetch that moved the cache counts."""
+    catalog.save({**CATALOG, "service": {"catalog_version": "listed"}})
+    monkeypatch.setattr(transport, "catalog",
+                        lambda key: {**CATALOG, "service": {"catalog_version": "listed"}})
+    transport.last_service.clear()
+    transport.last_service.update({"catalog_version": "from-a-call"})
+    assert catalog.sync_if_stale("k") is False
+
+
+def test_a_numeric_positional_reaches_the_server_as_a_number(_file_backend, monkeypatch):
+    """`novgraph recent 5` sent "5" and the server refused it as not an integer."""
+    catalog.save({"tools": [{"function": {
+        "name": "novgraph_recent", "description": "Recent commits.",
+        "parameters": {"type": "object", "properties": {
+            "limit": {"type": "integer", "description": "how many"},
+            "codebase": {"type": "string"}}}}}]})
+    from novaya import cli
+    sent = {}
+    monkeypatch.setattr(cli, "run_tool", lambda name, payload, args: sent.update(payload) or 0)
+    assert cli.main(["recent", "5"]) == 0 and sent == {"limit": 5}
+    sent.clear()
+    assert cli.main(["recent"]) == 0 and sent == {}
+
+
+def test_the_mcp_server_negotiates_the_protocol_and_announces_tool_changes(
+        _file_backend, monkeypatch, capsys):
+    from novaya import mcp
+    server = mcp.Server()
+    for asked, answered in (("2025-06-18", "2025-06-18"), ("2024-11-05", "2024-11-05"),
+                            ("1999-01-01", mcp.PROTOCOL_VERSION), (None, mcp.PROTOCOL_VERSION)):
+        server.handle({"jsonrpc": "2.0", "id": 1, "method": "initialize",
+                       "params": {"protocolVersion": asked}})
+        reply = json.loads(capsys.readouterr().out.strip())
+        assert reply["result"]["protocolVersion"] == answered
+        assert reply["result"]["capabilities"]["tools"]["listChanged"] is True
+
+    catalog.save(CATALOG)
+    monkeypatch.setattr(mcp.credentials, "load", lambda: "k")
+    monkeypatch.setattr(mcp.transport, "call", lambda key, tool, args: {"text": "ok"})
+    monkeypatch.setattr(mcp.sync, "resync", lambda *a: 0)
+    moved = iter([True, False])
+    monkeypatch.setattr(mcp.catalog, "sync_if_stale", lambda key: next(moved))
+    for expect_notice in (True, False):
+        server.handle({"jsonrpc": "2.0", "id": 2, "method": "tools/call",
+                       "params": {"name": "novgraph_why", "arguments": {}}})
+        lines = [json.loads(x) for x in capsys.readouterr().out.strip().splitlines()]
+        assert lines[0]["id"] == 2, "the answer goes first"
+        assert (len(lines) == 2 and lines[1]["method"]
+                == "notifications/tools/list_changed") is expect_notice
+
+
+def test_adapter_names_never_run_into_the_status_column(capsys, monkeypatch):
+    from novaya import cli
+    monkeypatch.setattr(base.Adapter, "detect", lambda self: False, raising=False)
+    cli.cmd_adapters(None)
+    rows = [l for l in capsys.readouterr().out.splitlines() if l.endswith("not found")]
+    assert rows and all("  not found" in r for r in rows)

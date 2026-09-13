@@ -10,7 +10,7 @@ Thanks for helping. Two rules shape everything here:
 ## Set up
 
 ```sh
-git clone https://github.com/novaya/novgraph && cd novgraph
+git clone https://github.com/Novaya-AI/novgraph && cd novgraph
 python -m pip install pytest
 python -m pytest
 ```

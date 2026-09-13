@@ -18,7 +18,17 @@ from pathlib import Path
 from . import (__version__, adapters, catalog, credentials, service, sync,
                transport, workspace)
 
-PROTOCOL_VERSION = "2024-11-05"
+# The handshake revisions this server speaks, newest first. 2026-07-28 is not
+# here: it drops `initialize` for per-request metadata, which this loop does not
+# read. The same set, minus that one, the hosted server negotiates.
+PROTOCOL_VERSIONS = ("2025-11-25", "2025-06-18", "2025-03-26", "2024-11-05")
+PROTOCOL_VERSION = PROTOCOL_VERSIONS[0]
+
+
+def negotiate(requested: str) -> str:
+    """Echo the client's revision when spoken here, else offer the newest."""
+    asked = str(requested or "").strip()
+    return asked if asked in PROTOCOL_VERSIONS else PROTOCOL_VERSION
 
 # Captured before anything can chdir: the launch directory is the only signal.
 LAUNCH_CWD = Path.cwd()
@@ -52,6 +62,7 @@ def _schemas(doc: dict):
 class Server:
     def __init__(self):
         self._schemas = None
+        self._tools_changed = False
         self._codebase = workspace.codebase_for(LAUNCH_CWD)
         # One process, one agent session.
         transport.SESSION["id"] = uuid.uuid4().hex
@@ -88,7 +99,7 @@ class Server:
         key = credentials.load()
         if key:
             try:
-                self._schemas = _schemas(catalog.refresh(key))
+                self._schemas = _schemas(sync.refresh(key))
                 return self._schemas
             except transport.ApiError as exc:
                 self._note("catalog unavailable (" + exc.message + "); using cache")
@@ -117,6 +128,10 @@ class Server:
             return "Novayagraph call failed: " + exc.message, True
         if catalog.sync_if_stale(key):
             sync.resync()
+            # The session's tool list was read at start; drop it and say so,
+            # or the agent keeps calling with the old descriptions until restart.
+            self._schemas = _schemas(catalog.cached()) or None
+            self._tools_changed = True
         text = result.get("text")
         if not (isinstance(text, str) and text.strip()):
             text = json.dumps(result, indent=2)
@@ -137,8 +152,8 @@ class Server:
             client = str(((params.get("clientInfo") or {}).get("name")) or "")
             transport.SESSION["agent"] = re.sub(r"[^A-Za-z0-9._ -]", "", client)[:40]
             self._send(mid, {
-                "protocolVersion": PROTOCOL_VERSION,
-                "capabilities": {"tools": {}},
+                "protocolVersion": negotiate(params.get("protocolVersion")),
+                "capabilities": {"tools": {"listChanged": True}},
                 "serverInfo": {"name": adapters.SERVER_NAME, "version": __version__},
                 "instructions": self.instructions(),
             })
@@ -159,6 +174,11 @@ class Server:
             # agent needs to see the message.
             self._send(mid, {"content": [{"type": "text", "text": text}],
                              "isError": failed})
+            if self._tools_changed:
+                self._tools_changed = False
+                sys.stdout.write(json.dumps({"jsonrpc": "2.0", "method":
+                                             "notifications/tools/list_changed"}) + "\n")
+                sys.stdout.flush()
             return
         if method in ("ping", "shutdown"):
             self._send(mid, {})

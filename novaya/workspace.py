@@ -123,12 +123,38 @@ def codebase_for(start: Path | None = None) -> str:
 
 # -- matching a checkout to the server's list ---------------------------------
 
-def match_codebase(names, root: Path) -> str:
+def repo_identity(url: str) -> str:
+    """host/owner/repo, lower-cased: one spelling for https, ssh and .git forms."""
+    value = _strip_credentials((url or "").strip())
+    if value.startswith("git@"):
+        value = value[4:].replace(":", "/", 1)
+    value = value.split("://", 1)[-1].rstrip("/")
+    if value.lower().endswith(".git"):
+        value = value[:-4]
+    return value.lower()
+
+
+def match_codebase(names, root: Path, origins: dict | None = None) -> str:
     """This checkout's codebase, or "". Origin first, directory name only when
-    unambiguous: unresolved is visible, wrongly resolved is not."""
+    unambiguous: unresolved is visible, wrongly resolved is not.
+
+    `origins` is {name: remote} from the server's listing. With it the remote
+    decides: `acme/api` and `other/api` can both be indexed, as `api` and
+    `other-api`, and a name match would bind one checkout to the other's graph.
+    A name is only matched against graphs that recorded no remote."""
     if not names:
         return ""
     origin = origin_url(root)
+    if origin and origins:
+        want = repo_identity(origin)
+        hits = [str(n) for n in names if repo_identity(origins.get(n) or "") == want]
+        if len(hits) == 1:
+            return hits[0]
+        if hits:
+            return ""       # one remote, several graphs: the caller must choose
+        names = [n for n in names if not origins.get(n)]
+        if not names:
+            return ""
     if origin:
         stem = origin.rstrip("/")
         if stem.endswith(".git"):

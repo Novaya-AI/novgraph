@@ -127,7 +127,7 @@ def cmd_install(args) -> int:
     # 2. the server -----------------------------------------------------------
     rule("Novayagraph")
     try:
-        served = catalog.refresh(key)
+        served = sync.refresh(key)
     except transport.ApiError as exc:
         return api_failure(exc)
     out(transport.base_url() + " -- " + str(len(catalog.tools(served)))
@@ -135,9 +135,10 @@ def cmd_install(args) -> int:
 
     # 3. which repository -----------------------------------------------------
     codebase = (args.codebase or "").strip()
-    available = []
+    available, origins = [], {}
     try:
-        available = doctor._names_in(transport.call(key, "novgraph_codebases", {}))
+        listing = transport.call(key, "novgraph_codebases", {})
+        available, origins = doctor._names_in(listing), doctor._origins_in(listing)
     except transport.ApiError as exc:
         out("could not list codebases: " + exc.message)
     if codebase and available and codebase not in available:
@@ -145,11 +146,18 @@ def cmd_install(args) -> int:
             + ", ".join(sorted(available)))
         return 2
     if not codebase:
-        codebase = workspace.match_codebase(available, root)
+        codebase = workspace.match_codebase(available, root, origins)
     origin = workspace.origin_url(root)
+    same_remote = sorted(n for n in available if origin and origins.get(n)
+                         and workspace.repo_identity(origins[n])
+                         == workspace.repo_identity(origin))
     if codebase:
         workspace.remember(root, codebase)
         out("this checkout is " + codebase)
+    elif len(same_remote) > 1:
+        out("this checkout's remote is indexed under several names: "
+            + ", ".join(same_remote))
+        out("  pick one: novgraph install --codebase <name>")
     else:
         # Reported, never guessed: a wrong codebase fails invisibly.
         out("this checkout does not match any indexed codebase.")
@@ -301,7 +309,7 @@ def cmd_key(args) -> int:
 
     # Prove the NEW key works before the user walks away believing it does.
     try:
-        served = catalog.refresh(supplied)
+        served = sync.refresh(supplied)
     except transport.ApiError as exc:
         out("")
         out("the key was stored, but the API rejected it:")
@@ -356,12 +364,16 @@ def cmd_doctor(args) -> int:
 
 
 def cmd_adapters(args) -> int:
+    # Widths from the names, so a long one ("GitHub Copilot") cannot run into
+    # the status column.
+    slug_w = max(len(a.slug) for a in adapters.ADAPTERS) + 2
+    name_w = max(len(a.name) for a in adapters.ADAPTERS) + 2
     for adapter in adapters.ADAPTERS:
         mark = "installed" if adapter.detect() else "not found"
-        out(adapter.slug.ljust(14) + adapter.name.ljust(14) + mark)
-        out("".ljust(14) + "instructions: " + adapter.instruction_file)
+        out(adapter.slug.ljust(slug_w) + adapter.name.ljust(name_w) + mark)
+        out("".ljust(slug_w) + "instructions: " + adapter.instruction_file)
         if adapter.docs_url:
-            out("".ljust(14) + adapter.docs_url)
+            out("".ljust(slug_w) + adapter.docs_url)
     out("")
     out("MCP command: " + " ".join(adapters.mcp_command()))
     return 0
@@ -501,7 +513,14 @@ def add_graph_verbs(sub) -> int:
                           help="target another repository")
         node.add_argument("--json", dest="as_json", action="store_true",
                           help="raw response")
-        if tool.positional:
+        if tool.positional and tool.type_of(tool.positional) is not str:
+            # One typed value: `recent 5` joined into the string "5", which
+            # the server refuses as not an integer.
+            node.add_argument(
+                tool.positional, type=tool.type_of(tool.positional),
+                nargs=None if tool.positional in tool.required else "?",
+                help=tool.describe(tool.positional))
+        elif tool.positional:
             node.add_argument(
                 tool.positional,
                 nargs="+" if tool.positional in tool.required else "*",
@@ -519,7 +538,7 @@ def _graph_call(args) -> int:
     payload = {}
     if tool.positional:
         value = getattr(args, tool.positional, None)
-        if value:
+        if value not in (None, "", []):
             payload[tool.positional] = (" ".join(value)
                                         if isinstance(value, list) else value)
     for name, _spec in tool.options():

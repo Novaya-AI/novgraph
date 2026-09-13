@@ -10,7 +10,8 @@ from __future__ import annotations
 import re
 from pathlib import Path
 
-from . import adapters, catalog, commands, credentials, docs, transport, workspace
+from . import (adapters, catalog, commands, credentials, docs, sync, transport,
+               workspace)
 
 OK = "ok"
 WARN = "warn"
@@ -66,7 +67,7 @@ def run(root: Path | None = None, deep: bool = True):
     try:
         # refresh, not fetch-and-discard: this is the request that keeps a
         # shell user's verbs current between installs.
-        served = catalog.refresh(key)
+        served = sync.refresh(key)
     except transport.ApiError as exc:
         checks.append(Check(
             "api " + transport.base_url(), FAIL,
@@ -85,11 +86,23 @@ def run(root: Path | None = None, deep: bool = True):
                             "could not list codebases: " + exc.message))
         listing = {}
     available = _names_in(listing)
+    graph_origin = _origins_in(listing).get(recorded) or ""
+    checkout_origin = workspace.origin_url(root)
     if not available:
         checks.append(Check(
             "codebase", FAIL,
             "this key can read no codebases. Connect a repository at "
             "https://app.trynovaya.com and wait for its job to finish."))
+    elif (recorded in available and graph_origin and checkout_origin
+          and workspace.repo_identity(graph_origin)
+          != workspace.repo_identity(checkout_origin)):
+        # Bound by name before bindings compared remotes: every answer here
+        # describes another repository, and nothing else would say so.
+        checks.append(Check(
+            "codebase", FAIL,
+            "this checkout is " + checkout_origin + ", but '" + recorded
+            + "' is the graph of " + graph_origin + ". Run `novgraph install` "
+            "here to rebind it."))
     elif recorded and recorded in available:
         checks.append(Check("codebase", OK, recorded))
     elif recorded:
@@ -98,7 +111,7 @@ def run(root: Path | None = None, deep: bool = True):
             "this checkout is recorded as '" + recorded + "', which this key "
             "cannot see. Available: " + ", ".join(sorted(available))))
     else:
-        guess = workspace.match_codebase(available, root)
+        guess = workspace.match_codebase(available, root, _origins_in(listing))
         checks.append(Check(
             "codebase", WARN,
             ("unresolved -- run `novgraph install` here to bind it"
@@ -162,10 +175,20 @@ def run(root: Path | None = None, deep: bool = True):
                 "" if state == "current" else
                 invoke + " is " + state + " -- run `novgraph install`"))
 
+    # Content, not presence: a file that exists but describes an older surface
+    # passed here while agents read the old tool descriptions from it.
+    expected = {"rules.md": docs.rules_md(served), "skills.md": docs.skills_md(served)}
     for name in ("rules.md", "skills.md", "blueprint.md"):
         path = docs.dir_for(root) / name
-        checks.append(Check(".novgraph/" + name, OK if path.exists() else FAIL,
-                            "" if path.exists() else "missing -- run novgraph install"))
+        if not path.exists():
+            checks.append(Check(".novgraph/" + name, FAIL,
+                                "missing -- run novgraph install"))
+        elif name in expected and path.read_text(encoding="utf-8") != expected[name]:
+            checks.append(Check(".novgraph/" + name, WARN,
+                                "describes an older tool surface than the server "
+                                "serves -- run novgraph install"))
+        else:
+            checks.append(Check(".novgraph/" + name, OK))
 
     # -- our own MCP server --------------------------------------------------
     if deep:
@@ -206,6 +229,16 @@ def _freshness(key: str, codebase: str) -> Check:
                      + ", host at " + (head or "unknown"))
     return Check(name, WARN, "no git-host sync for this codebase; it updates "
                              "only when pushed")
+
+
+def _origins_in(listing: dict) -> dict:
+    """{name: remote} from the structured listing; {} when the server sent none."""
+    found = {}
+    for item in listing.get("codebases") or []:
+        if isinstance(item, dict) and (item.get("codebase") or item.get("name")):
+            found[str(item.get("codebase") or item.get("name"))] = str(
+                item.get("origin_url") or "")
+    return found
 
 
 def _names_in(listing: dict):

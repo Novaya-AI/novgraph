@@ -126,11 +126,14 @@ def sync_if_stale(key: str = "") -> bool:
     key = key or credentials.load()
     if not key:
         return False
+    before = cached_version()
     try:
         refresh(key)
-        return True
     except transport.ApiError:
         return False
+    # True only when the refetch moved the cache: a call envelope reporting a
+    # version the listing does not must not resync every repository per call.
+    return cached_version() != before
 
 
 def cached() -> dict:

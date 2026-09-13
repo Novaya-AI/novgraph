@@ -13,6 +13,20 @@ from pathlib import Path
 from . import adapters, catalog, commands, docs, workspace
 
 
+def refresh(key: str) -> dict:
+    """Fetch the catalog, and carry it into every repository when it moved.
+
+    The one way to refresh. An MCP session start and `doctor` used to update
+    the cache alone; the next call then found the versions equal and never
+    resynced, so repository files kept the old surface indefinitely. Raises
+    transport.ApiError like catalog.refresh."""
+    before = catalog.cached_version()
+    doc = catalog.refresh(key)
+    if catalog.cached_version() != before:
+        resync(doc)
+    return doc
+
+
 def resync(cat: dict | None = None) -> int:
     """Rewrite what changed. Returns how many files were written."""
     try:
