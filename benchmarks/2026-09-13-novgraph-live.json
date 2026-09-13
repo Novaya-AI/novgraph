@@ -1,0 +1,233 @@
+{
+  "created_at": "2026-09-13T16:18:20.769901+00:00",
+  "client_version": "0.1.7",
+  "api_base": "https://api.trynovaya.com",
+  "codebase": "codewiki-knowledge-graph",
+  "target": "novaya/credentials.py",
+  "query": "load_stored",
+  "session_id_sha256": "32c1f398ce52f388daef7fa83b9840cce43242cfa695e68ad82be5a16f428148",
+  "advertised_tools": [
+    "novgraph_summary",
+    "novgraph_overview",
+    "novgraph_search",
+    "novgraph_why",
+    "novgraph_connections",
+    "novgraph_impact",
+    "novgraph_recent",
+    "novgraph_codebases",
+    "novgraph_ask",
+    "novgraph_record_why",
+    "novgraph_savings"
+  ],
+  "advertised_tool_count": 11,
+  "catalog_estimated_tokens": 2287,
+  "token_method": "response characters and cited source bytes divided by four",
+  "baseline": "complete contents of every file cited by each answer",
+  "model_inference": false,
+  "provider_token_telemetry": false,
+  "record_why_executed": false,
+  "record_why_reason": "write operation excluded to avoid synthetic production history",
+  "rows": [
+    {
+      "tool": "novgraph_summary",
+      "arguments": {
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 360.18,
+      "server_tool_ms": 6,
+      "response_chars": 1505,
+      "response_sha256": "9f08825604376fafd5bc8495214f92d3f53be92b11bb62c2cdb1aaeb46e7ef21",
+      "baseline_tokens": 103005,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 377,
+        "savings_pct": 99.63,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_overview",
+      "arguments": {
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 779.07,
+      "server_tool_ms": 8,
+      "response_chars": 789,
+      "response_sha256": "966685f60d2d3695d7ba1813a13b0a0a852277bfeca95358ba4f6312f8ed46ea",
+      "baseline_tokens": 105946,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 198,
+        "savings_pct": 99.81,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_search",
+      "arguments": {
+        "query": "load_stored",
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 361.85,
+      "server_tool_ms": 11,
+      "response_chars": 427,
+      "response_sha256": "65228d5114a2485f1599ab7b4e73f29fbefb013911ffc244fe8d3b17a8740a53",
+      "baseline_tokens": 2702,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 107,
+        "savings_pct": 96.04,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_why",
+      "arguments": {
+        "target": "novaya/credentials.py",
+        "precision": "general",
+        "limit": 8,
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 795.14,
+      "server_tool_ms": 5,
+      "response_chars": 594,
+      "response_sha256": "3236ef63f8522c0af72c67b23add22520a556fab3c48976cc7bf50d79a8250fb",
+      "baseline_tokens": 0,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 149,
+        "savings_pct": null,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_connections",
+      "arguments": {
+        "target": "novaya/credentials.py",
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 816.28,
+      "server_tool_ms": 7,
+      "response_chars": 795,
+      "response_sha256": "b7b6522641c0a31bf0fd22af7ebec52ece24cc2702ba725b771327eae97bfea6",
+      "baseline_tokens": 31187,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 199,
+        "savings_pct": 99.36,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_impact",
+      "arguments": {
+        "target": "novaya/credentials.py",
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 381.79,
+      "server_tool_ms": 10,
+      "response_chars": 837,
+      "response_sha256": "c797a3a27d1e1bf1775fa8e220fc62414ff4d70ed058e0ca339e2084ca5c135f",
+      "baseline_tokens": 31187,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 210,
+        "savings_pct": 99.33,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_recent",
+      "arguments": {
+        "limit": 5,
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 753.38,
+      "server_tool_ms": 4,
+      "response_chars": 1095,
+      "response_sha256": "744204de824d3bced2656a8a1e53d4e783f13c4d383fd8ba7d401db99cc4a929",
+      "baseline_tokens": 0,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 274,
+        "savings_pct": null,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_codebases",
+      "arguments": {
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 333.42,
+      "server_tool_ms": 1,
+      "response_chars": 529,
+      "response_sha256": "a9bad03a6a785818161486f3a3f4caee99b1a2c3adc2b99ca3d050942ae43780",
+      "baseline_tokens": 0,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 133,
+        "savings_pct": null,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_ask",
+      "arguments": {
+        "question": "Before changing novaya/credentials.py, explain its constraints, identify its callers and tests, and rank the likely blast radius.",
+        "budget_tokens": 900,
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 325.7,
+      "server_tool_ms": 19,
+      "response_chars": 376,
+      "response_sha256": "aab3fbc1f283f0f458ca765b7c66e406abc13283d0c7e88402bccc1dd7f0982a",
+      "baseline_tokens": 2702,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 94,
+        "savings_pct": 96.52,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true
+    },
+    {
+      "tool": "novgraph_savings",
+      "arguments": {
+        "days": 7,
+        "codebase": "codewiki-knowledge-graph"
+      },
+      "http_wall_ms": 347.14,
+      "server_tool_ms": 1,
+      "response_chars": 1450,
+      "response_sha256": "b1404d57902e79fa7772fc7a2c63405e1f24197231df90685357d80e91c7d655",
+      "baseline_tokens": 0,
+      "token_estimate": {
+        "method": "source_bytes_and_response_chars_divided_by_4",
+        "baseline": "full_cited_files",
+        "output_tokens": 363,
+        "savings_pct": null,
+        "includes_model_prompt_and_schema": false
+      },
+      "non_empty": true,
+      "classification": "session telemetry; no grep retrieval baseline"
+    }
+  ]
+}

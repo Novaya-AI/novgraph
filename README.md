@@ -14,9 +14,11 @@ for four things a file read cannot give them: the recorded intent behind each
 commit, files that change together without importing each other, ranked blast
 radius, and computed architecture.
 
-**Token savings: 78% to 99.74% per answer**, measured against the cost of
-reading the files each answer cites — not modelled, not estimated from a
-benchmark.
+**Live 0.1.7 sample: 96.04% to 99.81% smaller than complete cited-file reads**
+on six measurable retrieval calls. Counts use a disclosed characters/bytes ÷ 4
+approximation; this is a content-size comparison, not provider billing or a
+universal result against grep. Read the
+[benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md).
 
 This repository is the client only — auth, agent detection, MCP registration
 and request transport. Python 3.11+, standard library, **no dependencies, no
@@ -57,12 +59,13 @@ it cites:
   traced what changes with core/novgraph_summary.py · vs reading the 12 files it cites
 ```
 
-**Measured range: 78% to 99.74% fewer tokens per answer.** The floor is a short
-answer about a small file — a ~223-token summary against a ~1k file is 78%. The
-ceiling is a structural answer about a large dependency set — ~500 tokens
-against the 191k of cited files above is 99.74%. The ratio is a property of how
-much the answer's cited files would have cost to read, so it is reported per
-answer rather than claimed as a headline.
+The API reports the estimated response size beside the estimated size of the
+complete files that answer cites. In the published 0.1.7 sample, measurable
+answers ranged from **96.04% to 99.81% smaller than those complete files**.
+Minimal local grep was cheaper for a simple symbol location; Novgraph became
+smaller when the task required contextual relationship inspection. The full
+method, paired commands, latency, raw summaries and failed `ask` case are in the
+[benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md).
 
 ## What's in the knowledge graph
 
@@ -98,10 +101,12 @@ hand-maintained: it is rebuilt from the repository on every push.
 - **History follows renames.** After `git mv`, recorded reasoning and co-change
   edges move to the new path instead of staying attached to a path that no
   longer exists.
-- **Savings measured, not modelled.** Every answer is compared against the
-  token cost of reading the files it cites — 78%–99.74% in measured sessions.
-  An answer whose baseline cannot be established reports no saving rather than
-  a guess. `/novgraph savings` prints the per-query ledger.
+- **Visible context accounting.** Every answer is compared against the
+  approximate token cost of reading the complete files it cites. An answer whose
+  baseline cannot be established reports no saving rather than a guess.
+  `/novgraph savings` prints the per-query ledger, and the
+  [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md)
+  shows where compact grep costs less.
 - **Per-session deduplication.** A repeated query in one agent session returns a
   short reference instead of the same text again.
 - **Explicit staleness.** While a new commit is indexing, changed files are
@@ -120,7 +125,7 @@ hand-maintained: it is rebuilt from the repository on every push.
 | Constants resolved exactly | yes | partial | yes |
 | History survives a rename | n/a | no | yes |
 | Refresh | none needed | re-run it | webhook per push |
-| Token cost reported | no | no | per answer, 78%–99.74% token savings measured |
+| Token cost reported | no | no | approximate response vs complete cited-file size |
 | Runs on your machine | yes | yes | no |
 
 ## Commands
