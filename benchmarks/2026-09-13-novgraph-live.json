@@ -2,7 +2,7 @@
   "created_at": "2026-09-13T16:18:20.769901+00:00",
   "client_version": "0.1.7",
   "api_base": "https://api.trynovaya.com",
-  "codebase": "codewiki-knowledge-graph",
+  "codebase": "private-production-codebase",
   "target": "novaya/credentials.py",
   "query": "load_stored",
   "session_id_sha256": "32c1f398ce52f388daef7fa83b9840cce43242cfa695e68ad82be5a16f428148",
@@ -31,7 +31,7 @@
     {
       "tool": "novgraph_summary",
       "arguments": {
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 360.18,
       "server_tool_ms": 6,
@@ -50,7 +50,7 @@
     {
       "tool": "novgraph_overview",
       "arguments": {
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 779.07,
       "server_tool_ms": 8,
@@ -70,7 +70,7 @@
       "tool": "novgraph_search",
       "arguments": {
         "query": "load_stored",
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 361.85,
       "server_tool_ms": 11,
@@ -92,7 +92,7 @@
         "target": "novaya/credentials.py",
         "precision": "general",
         "limit": 8,
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 795.14,
       "server_tool_ms": 5,
@@ -112,7 +112,7 @@
       "tool": "novgraph_connections",
       "arguments": {
         "target": "novaya/credentials.py",
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 816.28,
       "server_tool_ms": 7,
@@ -132,7 +132,7 @@
       "tool": "novgraph_impact",
       "arguments": {
         "target": "novaya/credentials.py",
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 381.79,
       "server_tool_ms": 10,
@@ -152,7 +152,7 @@
       "tool": "novgraph_recent",
       "arguments": {
         "limit": 5,
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 753.38,
       "server_tool_ms": 4,
@@ -171,7 +171,7 @@
     {
       "tool": "novgraph_codebases",
       "arguments": {
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 333.42,
       "server_tool_ms": 1,
@@ -192,7 +192,7 @@
       "arguments": {
         "question": "Before changing novaya/credentials.py, explain its constraints, identify its callers and tests, and rank the likely blast radius.",
         "budget_tokens": 900,
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 325.7,
       "server_tool_ms": 19,
@@ -212,7 +212,7 @@
       "tool": "novgraph_savings",
       "arguments": {
         "days": 7,
-        "codebase": "codewiki-knowledge-graph"
+        "codebase": "private-production-codebase"
       },
       "http_wall_ms": 347.14,
       "server_tool_ms": 1,

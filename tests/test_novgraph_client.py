@@ -354,11 +354,11 @@ def test_the_codebase_is_matched_on_the_origin(tmp_path):
     (root / ".git").mkdir(parents=True)
     (root / ".git" / "config").write_text(
         '[remote "origin"]\n'
-        '\turl = https://github.com/Owner/Codewiki-Knowledge-Graph.git\n',
+        '\turl = https://github.com/Owner/sample-project.git\n',
         encoding="utf-8")
     assert workspace.match_codebase(
-        ["something-else", "codewiki-knowledge-graph"], root
-    ) == "codewiki-knowledge-graph"
+        ["something-else", "sample-project"], root
+    ) == "sample-project"
 
 
 def test_credentials_are_stripped_out_of_a_recorded_origin(tmp_path):
@@ -402,7 +402,7 @@ def test_codebase_names_are_read_without_swallowing_the_decoration():
     checkout to.
     """
     listing = {"text": (
-        "  codewiki-knowledge-graph — 967 files, 10 subsystems\n"
+        "  sample-project — 967 files, 10 subsystems\n"
         "  second-repo — 3 files\n"
         "\n"
         # Parenthesised on purpose: implicit literal concatenation binds
@@ -410,7 +410,7 @@ def test_codebase_names_are_read_without_swallowing_the_decoration():
         # preceding block by 40 instead of the rule character.
         + ("─" * 40) + "\n"
         + "◆ Novayagraph · listed the codebases this key can read")}
-    assert doctor._names_in(listing) == ["codewiki-knowledge-graph", "second-repo"]
+    assert doctor._names_in(listing) == ["sample-project", "second-repo"]
 
 
 def test_the_structured_field_wins_over_the_prose_that_broke_it():
@@ -422,14 +422,14 @@ def test_the_structured_field_wins_over_the_prose_that_broke_it():
     already installed precisely because they prefer it when it is there.
     """
     listing = {
-        "text": ("  codewiki-knowledge-graph \u2014 967 files, 10 subsystems\n"
+        "text": ("  sample-project \u2014 967 files, 10 subsystems\n"
                  "        https://github.com/o/r @ 79d1cf63b5 (main)\n\n"
                  "Name one explicitly on every repository call \u2014 the remote "
                  "URL works too."),
-        "codebases": [{"codebase": "codewiki-knowledge-graph",
+        "codebases": [{"codebase": "sample-project",
                        "origin_url": "https://github.com/o/r", "files": 967}],
     }
-    assert doctor._names_in(listing) == ["codewiki-knowledge-graph"]
+    assert doctor._names_in(listing) == ["sample-project"]
 
     # Without the field, the old scraper still trips on that sentence -- which
     # is why the fix belonged on the server, where it reaches every client.

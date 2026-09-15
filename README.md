@@ -7,12 +7,10 @@
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue)](LICENSE)
 [![CI](https://github.com/Novaya-AI/novgraph/actions/workflows/ci.yml/badge.svg)](https://github.com/Novaya-AI/novgraph/actions/workflows/ci.yml)
 
-Command-line client for **Novgraph**, a hosted **knowledge graph** of a git
-repository. The graph holds your files and symbols as nodes and their real
-relationships as typed edges, and coding agents query it over MCP or the shell
-for four things a file read cannot give them: the recorded intent behind each
-commit, files that change together without importing each other, ranked blast
-radius, and computed architecture.
+Command-line client for **Novgraph**, Novaya's proprietary hosted code
+knowledge graph. Coding agents query it over MCP or the shell for repository
+context that source search alone does not preserve: recorded intent, code that
+tends to evolve together, ranked change impact, and architecture context.
 
 **Live 0.1.7 sample: 96.04% to 99.81% smaller than complete cited-file reads**
 on six measurable retrieval calls. Counts use a disclosed characters/bytes ÷ 4
@@ -39,24 +37,17 @@ verifies each step. `novgraph doctor` re-runs those checks with an exit code.
 ## What problem it solves
 
 A coding agent starts each session with no memory of the repository. To answer
-"what does this touch", it greps, opens files, and infers — spending tokens to
-rebuild a picture it loses at the end of the session. Three classes of fact are
-not recoverable that way at all:
+"what does this touch", it greps, opens files, and reconstructs context that it
+loses at the end of the session. Source search is useful for current text, but
+it does not preserve the intent behind decisions or provide a repository-wide
+view of relationships and change impact.
 
-| Fact | Where it lives | Why reading files misses it |
-| --- | --- | --- |
-| Why a change was made | commit history + recorded reasoning | git stores the diff, not the intent or the rejected alternative |
-| Files that change together | commit co-occurrence | there is no import, call or reference to follow |
-| Computed architecture | whole-graph analysis | hubs, layering and cycles are properties of the graph, not of any file |
-
-Novgraph holds all three in a knowledge graph per repository and answers from
-the graph. A query returns a few hundred tokens where the equivalent file reads
-cost tens of thousands, and every answer reports the difference measured against the files
-it cites:
+Novgraph gives the agent that context directly. A query returns a focused
+answer and reports its estimated size against the complete files it cites:
 
 ```
 ◆ Novgraph · saved you an estimated ~191k tokens · ~622k this session
-  traced what changes with core/novgraph_summary.py · vs reading the 12 files it cites
+  traced what changes with src/auth/session.py · vs reading the 12 files it cites
 ```
 
 The API reports the estimated response size beside the estimated size of the
@@ -67,38 +58,39 @@ smaller when the task required contextual relationship inspection. The full
 method, paired commands, latency, raw summaries and failed `ask` case are in the
 [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md).
 
-## What's in the knowledge graph
+## What Novgraph provides
 
-One graph per repository, built from the working tree and the full git history.
+Each repository gets a maintained knowledge graph designed for coding-agent
+questions. It can locate code, recall recorded decisions, identify related
+areas, rank likely change impact, and summarize architecture. Results include
+evidence and freshness information so the agent knows when to verify the
+current working tree.
 
-| | |
-| --- | --- |
-| **Nodes** | files, and symbols within them: `function`, `class`, `method`, `constant` |
-| **Structural edges** | `imports`, `calls`, `inherits`, `contains` — parsed from source |
-| **History edges** | `co_change` (files committed together, weighted by commit count), `changed` (which update touched which file) |
-| **Inferred edges** | runtime relationships no parser can see, added by an LLM pass over the graph |
-| **Records** | one why-entry per commit: subject, intent, reasoning, files touched, serial number |
-| **Computed views** | load-bearing hubs, de-facto subsystems, layering, dependency cycles — derived from the whole graph, not declared anywhere |
-
-Language coverage is Python and JS/TS via tree-sitter, with a generic
-tree-sitter path for Go, Rust, Java and C. Nothing about the graph is
-hand-maintained: it is rebuilt from the repository on every push.
+Language coverage includes Python, JavaScript, TypeScript, Go, Rust, Java and C.
+The hosted service maintains the graph as the repository evolves.
 
 ## Features
 
-- **Recorded intent per commit.** `why <path>` returns the reasoning behind the
+- **Recorded intent.** `why <path>` recalls the reasoning behind relevant
   changes.
-- **Co-change coupling.** `connections <path>` .
-- **Blast radius, ordered by certainty.**
-- **Computed architecture.** .
-- **Exact identifier resolution**, 
-- **History follows renames.** 
-- **Visible context accounting.** 
-  `/novgraph savings` prints the per-query ledger, and the
+- **Co-change context.** `connections <path>` identifies code that tends to
+  evolve together, including relationships source search can miss.
+- **Ranked blast radius.** `impact <path>` ranks code likely to be affected and
+  explains the evidence behind the result.
+- **Architecture context.** `overview` gives agents a repository-wide view of
+  important areas and how the project fits together.
+- **Precise code discovery.** `search <query>` locates concepts and identifiers
+  without requiring broad file reads.
+- **Continuous history.** Useful context remains attached as the codebase
+  evolves.
+- **Visible context accounting.** Answers report estimated context reduction;
+  `/novgraph savings` prints the session ledger, and the
   [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md)
   shows where compact grep costs less.
-- **Per-session deduplication.**
-- **Explicit staleness identification and deranking .
+- **Efficient sessions.** Novgraph avoids repeatedly sending context the agent
+  has already received.
+- **Freshness awareness.** Results identify their repository state and tell the
+  agent when current code needs direct verification.
 
 ### Knowledge graph vs. the alternatives
 
@@ -106,11 +98,11 @@ hand-maintained: it is rebuilt from the repository on every push.
 | --- | --- | --- | --- |
 | Symbols, calls, imports | manual | yes | yes |
 | Commit intent | no | no | yes |
-| Co-change without a static link | no | no | yes |
-| Blast radius split facts/history | no | partial | yes |
-| Constants resolved exactly | yes | partial | yes |
-| History survives a rename | n/a | no | yes |
-| Refresh | none needed | re-run it | webhook per push |
+| Code that tends to evolve together | manual | no | yes |
+| Ranked change impact with evidence | manual | partial | yes |
+| Precise identifier discovery | yes | partial | yes |
+| Context preserved as code evolves | n/a | no | yes |
+| Freshness reported | current text | depends on tool | yes |
 | Token cost reported | no | no | approximate response vs complete cited-file size |
 | Runs on your machine | yes | yes | no |
 
@@ -189,7 +181,8 @@ unchanged and reported. `novgraph uninstall` removes exactly what was written.
 
 ## Key handling and data
 
-- The key is stored in the OS credential store. It is never written to the
+- The key is stored in the OS credential store: Windows DPAPI, macOS Keychain,
+  libsecret via `secret-tool`, or a `0600` file. It is never written to the
   repository, an agent config, or a log.
 - `NOVGRAPH_API_KEY` overrides the store when set — for CI. `NOVGRAPH_API_BASE`
   overrides the endpoint.

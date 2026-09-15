@@ -2,7 +2,7 @@
 
 **Run date:** 13 September 2026<br>
 **Status:** preliminary, single-repository field test<br>
-**Subject:** `codewiki-knowledge-graph` at `817c538495`, 1,027 indexed files<br>
+**Subject:** private production codebase, approximately 1,000 indexed files<br>
 **Client:** `novaya` 0.1.7 on Windows, calling `https://api.trynovaya.com`
 
 This report tests what Novgraph can substantiate today. It separates three
@@ -151,7 +151,7 @@ percentage:
 - `why` matched the three commits returned by `git log --follow`.
 - `recent` matched the current Git sequence and also exposed a graph-only
   reasoning record about the OSS export contract.
-- `codebases` matched the checkout's remote and `817c538495` HEAD.
+- `codebases` matched the checkout's remote, branch and indexed revision.
 - `ask` did not answer the supplied task. It returned a generated
   `novgraph:public-benchmark-…` session marker as the task and only identified
   the target file. This is a product defect, not a benchmark-harness pass.
@@ -164,7 +164,8 @@ recomputed in this run.
 
 A precise public statement is:
 
-> In one live Novgraph 0.1.7 run over a 1,027-file production codebase, six
+> In one live Novgraph 0.1.7 run over an approximately 1,000-file production
+> codebase, six
 > measurable retrieval answers were 96.04%–99.81% smaller than reading their
 > complete cited files. For one dependency investigation, `connections` and
 > `impact` were 94.63%–94.91% smaller than a context-rich ripgrep trace, while

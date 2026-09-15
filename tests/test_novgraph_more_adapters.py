@@ -162,21 +162,12 @@ def test_each_new_client_gets_its_own_command_format(tmp_path):
         assert "{invoke}" not in text and "{request}" not in text
 
 
-def test_the_served_body_is_safe_as_a_gemini_prompt():
+def test_a_command_body_is_safe_as_a_gemini_prompt():
     """Gemini runs `!{...}` as shell and inlines `@{...}` files in a command
-    prompt. The served body must never contain either."""
-    # The server declares the command; outside this repo (the open-source
-    # client) a snapshot of it, written by packaging/export_oss.py, stands in.
-    fixture = Path(__file__).parent / "fixtures" / "novgraph_command.json"
-    try:
-        sys.path.insert(0, str(REPO_ROOT))
-        from gateway import hosted_port
-        spec = dict(hosted_port.CLIENT_COMMANDS[0])
-    except ImportError:
-        spec = json.loads(fixture.read_text(encoding="utf-8"))
-    body = spec["body"]
+    prompt. Client rendering must preserve a safe command body."""
+    body = SPEC["body"]
     assert "!{" not in body and "@{" not in body and "'''" not in body
-    rendered = commands.render(adapters.get("gemini-cli"), spec)
+    rendered = commands.render(adapters.get("gemini-cli"), SPEC)
     assert tomllib.loads(rendered)["prompt"].strip()
 
 
