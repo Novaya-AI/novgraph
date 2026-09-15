@@ -87,32 +87,18 @@ hand-maintained: it is rebuilt from the repository on every push.
 ## Features
 
 - **Recorded intent per commit.** `why <path>` returns the reasoning behind the
-  changes that touched a file, written back by agents via `record-why`.
-- **Co-change coupling.** `connections <path>` includes files that historically
-  change with it and have no static link to it, with the commit count.
-- **Blast radius, ordered by certainty.** `impact <path>` separates facts
-  (callers, importers) from history (co-change), and states when the history is
-  too shallow to be evidence.
-- **Computed architecture.** `overview` reports load-bearing files, de-facto
-  subsystems, layering and dependency cycles.
-- **Exact identifier resolution**, including module-level constants. A query
-  for `MAX_RETRIES` returns its definition; if nothing is named that, the answer
-  says so instead of returning fuzzy matches on a fragment of the name.
-- **History follows renames.** After `git mv`, recorded reasoning and co-change
-  edges move to the new path instead of staying attached to a path that no
-  longer exists.
-- **Visible context accounting.** Every answer is compared against the
-  approximate token cost of reading the complete files it cites. An answer whose
-  baseline cannot be established reports no saving rather than a guess.
+  changes.
+- **Co-change coupling.** `connections <path>` .
+- **Blast radius, ordered by certainty.**
+- **Computed architecture.** .
+- **Exact identifier resolution**, 
+- **History follows renames.** 
+- **Visible context accounting.** 
   `/novgraph savings` prints the per-query ledger, and the
   [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md)
   shows where compact grep costs less.
-- **Per-session deduplication.** A repeated query in one agent session returns a
-  short reference instead of the same text again.
-- **Explicit staleness.** While a new commit is indexing, changed files are
-  flagged and ranked below fresh ones, and structural answers name the commit
-  they describe. Anything newer than the index is reported as such, so the agent
-  reads the working tree instead.
+- **Per-session deduplication.**
+- **Explicit staleness identification and deranking .
 
 ### Knowledge graph vs. the alternatives
 
@@ -203,8 +189,7 @@ unchanged and reported. `novgraph uninstall` removes exactly what was written.
 
 ## Key handling and data
 
-- The key is stored in the OS credential store: Windows DPAPI, macOS Keychain,
-  libsecret via `secret-tool`, or a `0600` file. It is never written to the
+- The key is stored in the OS credential store. It is never written to the
   repository, an agent config, or a log.
 - `NOVGRAPH_API_KEY` overrides the store when set — for CI. `NOVGRAPH_API_BASE`
   overrides the endpoint.
