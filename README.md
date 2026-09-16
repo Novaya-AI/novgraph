@@ -71,12 +71,8 @@ The hosted service maintains the graph as the repository evolves.
 
 ## Features
 
-- **Recorded intent.** `why <path>` recalls the reasoning behind relevant
-  changes.
-- **Co-change context.** `connections <path>` identifies code that tends to
-  evolve together, including relationships source search can miss.
-- **Ranked blast radius.** `impact <path>` ranks code likely to be affected and
-  explains the evidence behind the result.
+- **Recorded intent.** 
+- **Ranked blast radius.**
 - **Architecture context.** `overview` gives agents a repository-wide view of
   important areas and how the project fits together.
 - **Precise code discovery.** `search <query>` locates concepts and identifiers
