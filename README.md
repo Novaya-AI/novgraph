@@ -73,20 +73,16 @@ The hosted service maintains the graph as the repository evolves.
 
 - **Recorded intent.** 
 - **Ranked blast radius.**
-- **Architecture context.** `overview` gives agents a repository-wide view of
-  important areas and how the project fits together.
-- **Precise code discovery.** `search <query>` locates concepts and identifiers
-  without requiring broad file reads.
-- **Continuous history.** Useful context remains attached as the codebase
-  evolves.
-- **Visible context accounting.** Answers report estimated context reduction;
-  `/novgraph savings` prints the session ledger, and the
+- **Architecture context.** 
+
+- **Precise code discovery.** 
+- **Continuous history.** .
+- **Visible context accounting.** 
+  /novgraph savings
   [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md)
   shows where compact grep costs less.
-- **Efficient sessions.** Novgraph avoids repeatedly sending context the agent
-  has already received.
-- **Freshness awareness.** Results identify their repository state and tell the
-  agent when current code needs direct verification.
+- **Efficient sessions.** 
+- **Freshness awareness.** 
 
 ### Knowledge graph vs. the alternatives
 
