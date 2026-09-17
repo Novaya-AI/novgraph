@@ -54,23 +54,13 @@ No coding model was invoked. This is a retrieval and transport test, not an
 end-to-end software-engineering evaluation. Every live call used HTTPS and no
 request was retried by the benchmark harness.
 
-### Token accounting
+### Reported context reduction
 
-The hosted API reports:
-
-```text
-estimated output tokens = response characters / 4
-full-file baseline       = bytes in every cited source file / 4
-reported reduction       = 1 - output / full-file baseline
-```
-
-The calculation is an approximation. It is not tokenizer output, model-provider
-telemetry, context-cache accounting, or a bill. A baseline is omitted when the
-answer cites graph history or repository metadata rather than a complete set of
-source files.
-
-The serialized 11-tool catalog was approximately **2,287 tokens** using the same
-four-characters-per-token rule. Per-call figures below exclude that schema cost.
+Novgraph reports how much smaller each focused answer is than the complete
+source context it cites. The percentages below are directional product
+telemetry from this live run. They are not tokenizer output, provider billing,
+a universal result, or a guarantee. Calls without comparable complete-file
+context are marked unmeasured.
 
 ### Local command baselines
 
@@ -106,12 +96,10 @@ maximum was **816.28 ms**. Median reported server tool time was **7 ms** and the
 maximum was **19 ms**, so most observed latency was outside tool execution:
 network, TLS, request routing, and client overhead.
 
-Six repository-reading calls had a complete cited-file baseline. Their median
-reported reduction was **99.35%**. Summing those per-call baselines gives 276,729
-tokens versus 1,185 returned tokens, or 99.57% less. That sum counts a file again
-when separate tools cite it, so it must not be presented as a deduplicated
-session saving. Charging the 2,287-token catalog once changes that arithmetic to
-98.75%, with the same repeated-file limitation.
+Six repository-reading calls had comparable complete-file context. Their median
+reported reduction was **99.35%**. Each result is presented independently;
+overlapping cited files mean the rows should not be combined into a session-wide
+savings claim.
 
 ## Novgraph compared with actual `rg` and `git` output
 
@@ -173,11 +161,19 @@ A precise public statement is:
 > latency was 382 ms. One of nine repository-reading tools, `ask`, failed its
 > supplied task in the sampled session.
 
+Claims this run does **not** establish:
+
+- “Novgraph always saves 99% versus grep.”
+- “Model-provider bills fall by the reported percentage.”
+- “Every tool uses fewer tokens than a minimal local command.”
+- “Novgraph is faster than local search.”
+- “Answer accuracy is 100%.”
+- “The result generalizes across repositories, languages, agents or tasks.”
 
 ## Reproduce
 
-The credential-safe scripts and result summaries are committed beside this
-report:
+The credential-safe scripts and result summaries used for this sample are
+committed beside this report:
 
 - [`benchmarks/benchmark_read_tools.py`](benchmarks/benchmark_read_tools.py)
 - [`benchmarks/benchmark_cli_baselines.py`](benchmarks/benchmark_cli_baselines.py)
@@ -204,9 +200,10 @@ uv run python benchmarks/benchmark_cli_baselines.py \
 
 The first script loads the key from Novgraph's credential backend and never
 accepts or writes it. Responses are represented by hashes unless
-`--include-text` is explicitly supplied. The second script records exact command
-arguments and output sizes. Use a new output filename for every run and publish
-the repository, revision, task, raw summaries, and any manual correctness checks.
+`--include-text` is explicitly supplied. The second records the paired command
+arguments and output sizes. The published percentages are Novgraph product
+telemetry; the public artifacts intentionally do not define the service's
+internal accounting implementation.
 
 The next useful benchmark should repeat this design across several public
 repositories and run matched coding tasks through the same model in two

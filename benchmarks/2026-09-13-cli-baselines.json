@@ -7,7 +7,6 @@
     "novaya",
     "tests"
   ],
-  "token_method": "command output characters divided by four, rounded up",
   "scope": "command output only; excludes follow-up reads, model reasoning, and schema cost",
   "rows": [
     {
@@ -19,9 +18,7 @@
         "novaya/credentials.py"
       ],
       "exit_code": 0,
-      "wall_ms": 34.72,
-      "output_chars": 30,
-      "estimated_output_tokens": 8
+      "wall_ms": 34.72
     },
     {
       "name": "search-with-context",
@@ -36,9 +33,7 @@
         "novaya/credentials.py"
       ],
       "exit_code": 0,
-      "wall_ms": 29.65,
-      "output_chars": 502,
-      "estimated_output_tokens": 126
+      "wall_ms": 29.65
     },
     {
       "name": "relationship-file-list",
@@ -52,9 +47,7 @@
         "tests"
       ],
       "exit_code": 0,
-      "wall_ms": 48.28,
-      "output_chars": 360,
-      "estimated_output_tokens": 90
+      "wall_ms": 48.28
     },
     {
       "name": "relationship-with-context",
@@ -70,9 +63,7 @@
         "tests"
       ],
       "exit_code": 0,
-      "wall_ms": 47.53,
-      "output_chars": 15638,
-      "estimated_output_tokens": 3910
+      "wall_ms": 47.53
     },
     {
       "name": "why-history",
@@ -85,9 +76,7 @@
         "novaya/credentials.py"
       ],
       "exit_code": 0,
-      "wall_ms": 121.82,
-      "output_chars": 177,
-      "estimated_output_tokens": 45
+      "wall_ms": 121.82
     },
     {
       "name": "recent",
@@ -98,9 +87,7 @@
         "-5"
       ],
       "exit_code": 0,
-      "wall_ms": 69.07,
-      "output_chars": 287,
-      "estimated_output_tokens": 72
+      "wall_ms": 69.07
     },
     {
       "name": "codebases-local-identity",
@@ -110,9 +97,7 @@
         "-v"
       ],
       "exit_code": 0,
-      "wall_ms": 61.26,
-      "output_chars": 157,
-      "estimated_output_tokens": 40
+      "wall_ms": 61.26
     }
   ],
   "no_single_command_equivalent": [

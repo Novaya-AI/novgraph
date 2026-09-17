@@ -15,10 +15,6 @@ import subprocess
 import time
 
 
-def estimated_tokens(value: str) -> int:
-    return (len(value) + 3) // 4
-
-
 def measure(name: str, argv: list[str], cwd: Path) -> dict:
     started = time.perf_counter()
     completed = subprocess.run(
@@ -33,7 +29,6 @@ def measure(name: str, argv: list[str], cwd: Path) -> dict:
         "exit_code": completed.returncode,
         "wall_ms": elapsed,
         "output_chars": len(output),
-        "estimated_output_tokens": estimated_tokens(output),
         "output": output,
     }
 
@@ -65,7 +60,6 @@ def run(root: Path, target: str, symbol: str, search_roots: list[str]) -> dict:
         "target": target,
         "symbol": symbol,
         "search_roots": search_roots,
-        "token_method": "command output characters divided by four, rounded up",
         "scope": "command output only; excludes follow-up reads, model reasoning, and schema cost",
         "rows": rows,
         "no_single_command_equivalent": [

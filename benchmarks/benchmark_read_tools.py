@@ -17,11 +17,6 @@ import uuid
 from novaya import __version__, credentials, transport
 
 
-def estimated_tokens(value: str) -> int:
-    """Use the same disclosed approximation as the hosted response metadata."""
-    return (len(value) + 3) // 4
-
-
 def run(codebase: str, target: str, query: str, question: str,
         include_text: bool = False) -> dict:
     key = credentials.load()
@@ -32,7 +27,6 @@ def run(codebase: str, target: str, query: str, question: str,
     transport.SESSION.update(id=session_id, agent="Novgraph public benchmark")
 
     catalog = transport.catalog(key)
-    catalog_json = json.dumps(catalog.get("tools") or [], separators=(",", ":"))
     advertised = transport.tool_names(catalog)
     cases = [
         ("novgraph_summary", {"codebase": codebase}),
@@ -63,10 +57,12 @@ def run(codebase: str, target: str, query: str, question: str,
             "arguments": arguments,
             "http_wall_ms": wall_ms,
             "server_tool_ms": response.get("latency_ms"),
-            "response_chars": len(text),
             "response_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
             "baseline_tokens": response.get("baseline_tokens", 0),
-            "token_estimate": estimate,
+            "token_estimate": {
+                "output_tokens": estimate.get("output_tokens"),
+                "savings_pct": estimate.get("savings_pct"),
+            },
             "non_empty": bool(text.strip()),
         }
         if include_text:
@@ -83,10 +79,12 @@ def run(codebase: str, target: str, query: str, question: str,
         "arguments": {"days": 7, "codebase": codebase},
         "http_wall_ms": savings_wall_ms,
         "server_tool_ms": savings.get("latency_ms"),
-        "response_chars": len(savings_text),
         "response_sha256": hashlib.sha256(savings_text.encode("utf-8")).hexdigest(),
         "baseline_tokens": savings.get("baseline_tokens", 0),
-        "token_estimate": savings.get("token_estimate") or {},
+        "token_estimate": {
+            "output_tokens": (savings.get("token_estimate") or {}).get("output_tokens"),
+            "savings_pct": (savings.get("token_estimate") or {}).get("savings_pct"),
+        },
         "non_empty": bool(savings_text.strip()),
         "classification": "session telemetry; no grep retrieval baseline",
     }
@@ -104,8 +102,7 @@ def run(codebase: str, target: str, query: str, question: str,
         "session_id_sha256": hashlib.sha256(session_id.encode("utf-8")).hexdigest(),
         "advertised_tools": advertised,
         "advertised_tool_count": len(advertised),
-        "catalog_estimated_tokens": estimated_tokens(catalog_json),
-        "token_method": "response characters and cited source bytes divided by four",
+        "measurement": "Novgraph product telemetry; internal accounting not published",
         "baseline": "complete contents of every file cited by each answer",
         "model_inference": False,
         "provider_token_telemetry": False,

@@ -13,9 +13,8 @@ context that source search alone does not preserve: recorded intent, code that
 tends to evolve together, ranked change impact, and architecture context.
 
 **Live 0.1.7 sample: 96.04% to 99.81% smaller than complete cited-file reads**
-on six measurable retrieval calls. Counts use a disclosed characters/bytes ÷ 4
-approximation; this is a content-size comparison, not provider billing or a
-universal result against grep. Read the
+on six measurable retrieval calls. These are directional product telemetry,
+not provider billing or a universal result against grep. Read the
 [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md).
 
 This repository is the client only — auth, agent detection, MCP registration
@@ -55,7 +54,7 @@ complete files that answer cites. In the published 0.1.7 sample, measurable
 answers ranged from **96.04% to 99.81% smaller than those complete files**.
 Minimal local grep was cheaper for a simple symbol location; Novgraph became
 smaller when the task required contextual relationship inspection. The full
-method, paired commands, latency, raw summaries and failed `ask` case are in the
+results, paired commands, latency, raw summaries and failed `ask` case are in the
 [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md).
 
 ## What Novgraph provides
@@ -71,18 +70,26 @@ The hosted service maintains the graph as the repository evolves.
 
 ## Features
 
-- **Recorded intent.** 
-- **Ranked blast radius.**
-- **Architecture context.** 
-
-- **Precise code discovery.** 
-- **Continuous history.** .
-- **Visible context accounting.** 
-  /novgraph savings
+- **Recorded intent.** `why <path>` recalls the reasoning behind relevant
+  changes.
+- **Co-change context.** `connections <path>` identifies code that tends to
+  evolve together, including relationships source search can miss.
+- **Ranked blast radius.** `impact <path>` ranks code likely to be affected and
+  explains the evidence behind the result.
+- **Architecture context.** `overview` gives agents a repository-wide view of
+  important areas and how the project fits together.
+- **Precise code discovery.** `search <query>` locates concepts and identifiers
+  without requiring broad file reads.
+- **Continuous history.** Useful context remains attached as the codebase
+  evolves.
+- **Visible context accounting.** Answers report estimated context reduction;
+  `/novgraph savings` prints the session ledger, and the
   [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md)
   shows where compact grep costs less.
-- **Efficient sessions.** 
-- **Freshness awareness.** 
+- **Efficient sessions.** Novgraph avoids repeatedly sending context the agent
+  has already received.
+- **Freshness awareness.** Results identify their repository state and tell the
+  agent when current code needs direct verification.
 
 ### Knowledge graph vs. the alternatives
 
