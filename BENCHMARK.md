@@ -173,14 +173,6 @@ A precise public statement is:
 > latency was 382 ms. One of nine repository-reading tools, `ask`, failed its
 > supplied task in the sampled session.
 
-Claims this run does **not** establish:
-
-- “Novgraph always saves 99% versus grep.”
-- “Model-provider bills fall by the reported percentage.”
-- “Every tool uses fewer tokens than a minimal local command.”
-- “Novgraph is faster than local search.”
-- “Answer accuracy is 100%.”
-- “The result generalizes across repositories, languages, agents or tasks.”
 
 ## Reproduce
 
