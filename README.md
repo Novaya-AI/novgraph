@@ -70,26 +70,18 @@ The hosted service maintains the graph as the repository evolves.
 
 ## Features
 
-- **Recorded intent.** `why <path>` recalls the reasoning behind relevant
-  changes.
-- **Co-change context.** `connections <path>` identifies code that tends to
-  evolve together, including relationships source search can miss.
-- **Ranked blast radius.** `impact <path>` ranks code likely to be affected and
-  explains the evidence behind the result.
-- **Architecture context.** `overview` gives agents a repository-wide view of
-  important areas and how the project fits together.
-- **Precise code discovery.** `search <query>` locates concepts and identifiers
-  without requiring broad file reads.
-- **Continuous history.** Useful context remains attached as the codebase
-  evolves.
+- **Recorded intent.** `
+- **Co-change context.** 
+- **Ranked blast radius.**
+- **Architecture context.**
+- **Precise code discovery.
+- **Continuous history.**
 - **Visible context accounting.** Answers report estimated context reduction;
   `/novgraph savings` prints the session ledger, and the
   [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md)
   shows where compact grep costs less.
-- **Efficient sessions.** Novgraph avoids repeatedly sending context the agent
-  has already received.
-- **Freshness awareness.** Results identify their repository state and tell the
-  agent when current code needs direct verification.
+
+- **Freshness awareness.**
 
 ### Knowledge graph vs. the alternatives
 
