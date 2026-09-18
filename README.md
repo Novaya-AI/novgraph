@@ -70,18 +70,14 @@ The hosted service maintains the graph as the repository evolves.
 
 ## Features
 
-- **Recorded intent.** `
-- **Co-change context.** 
-- **Ranked blast radius.**
-- **Architecture context.**
-- **Precise code discovery.
-- **Continuous history.**
-- **Visible context accounting.** Answers report estimated context reduction;
-  `/novgraph savings` prints the session ledger, and the
-  [benchmark report](https://github.com/Novaya-AI/novgraph/blob/main/BENCHMARK.md)
-  shows where compact grep costs less.
-
-- **Freshness awareness.**
+- **Recorded intent**
+- **Co-change context**
+- **Ranked blast radius**
+- **Architecture context**
+- **Precise code discovery**
+- **Continuous history**
+- **Visible context accounting**
+- **Freshness awareness**
 
 ### Knowledge graph vs. the alternatives
 

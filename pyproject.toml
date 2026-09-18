@@ -5,13 +5,13 @@ build-backend = "hatchling.build"
 [project]
 name = "novaya"
 dynamic = ["version"]
-description = "Novayagraph: a live memory of your codebase for every coding agent."
+description = "Novgraph for coding agents: recorded intent, co-change context, ranked blast radius, architecture context, precise code discovery, continuous history, visible context accounting and freshness awareness."
 readme = "README.md"
 requires-python = ">=3.11"
 license = "Apache-2.0"
 license-files = ["LICENSE", "NOTICE"]
 authors = [{ name = "Novaya" }]
-keywords = ["novgraph", "knowledge-graph", "coding-agents", "mcp", "claude-code", "cursor"]
+keywords = ["novgraph", "knowledge-graph", "coding-agents", "mcp", "recorded-intent", "co-change", "blast-radius", "architecture-context", "code-discovery", "continuous-history", "context-accounting", "freshness-awareness", "claude-code", "cursor"]
 classifiers = [
   "Environment :: Console",
   "Intended Audience :: Developers",
